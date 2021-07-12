@@ -9,10 +9,12 @@ from flask_login import login_user, current_user, logout_user, login_required
 # Entering Dummy Data
 # Dummy data removed
 
+
 @app.route('/')
 @app.route("/home")
 def home():
-    posts = Post.query.all()
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=1)
     return render_template('/home.html', posts=posts)
 
 
@@ -36,7 +38,7 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 
-@app.route("/login",methods=['GET', 'POST'])
+@app.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
@@ -142,3 +144,12 @@ def delete_post(post_id):
     flash('Your Post has been Deleted!', 'success')
     return redirect(url_for('home'))
 
+
+@app.route("/user/<string:username>")
+def user_posts(username):
+    page = request.args.get('page', 1, type=int)
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = Post.query.filter_by(author=user)\
+        .order_by(Post.date_posted.desc())\
+        .paginate(page=page, per_page=1)
+    return render_template('/user_posts.html', posts=posts, user=user)
