@@ -19,9 +19,10 @@ class User(db.Model, UserMixin):
 
     # Generating Token
     def get_reset_token(self, expires_sec=1800):
-        s = Serializer(app.config['SECRET_KEY'], expires_sec=1800)
+        s = Serializer(app.config['SECRET_KEY'], expires_sec)
         return s.dumps({'user_id': self.id}).decode('utf-8')
     # Validating Token and @staticmethod is used for not using self and considering token instead.
+
     @staticmethod
     def verify_reset_token(token):
         s = Serializer(app.config['SECRET_KEY'])
